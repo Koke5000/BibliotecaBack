@@ -1,5 +1,5 @@
 export default interface Prestamo{
-    ejemplar : number,
+    ejemplar : any,
     usuario? : string,
     fechaprestamo : Date,
     fechadevolucion? : Date

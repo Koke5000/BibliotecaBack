@@ -1,18 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 
 dotenv.config();
-const port = process.env.PORT;
-const allowedOrigins = ["http://localhost:5173"];
-const options: cors.CorsOptions = {
-  origin: allowedOrigins,
-};
 
 const app = express();
+const port = process.env.PORT;
 app.use(express.json());
-app.use(cors(options));
-
 
 import routerUsuarios from "./usuarios/infrastructure/rest/Usuario.Router";
 import routerLibros from "./libros/infrastructure/rest/Libro.Router";

@@ -1,50 +1,42 @@
-import { hash } from "../../context/security/encrypter";
-import { compare } from "bcrypt";
 import LibroRepository from "../domain/Libro.Repository";
+import Libro from "../domain/Libro";
 import PrestamoRepository from "../../prestamos/domain/Prestamo.Repository";
+import Prestamo from "../../prestamos/domain/Prestamo";
 
 export default class LibroUseCases{
 
     private libroRepository : LibroRepository;
-    private prestamoRepository : PrestamoRepository;
+    private prestamoRepository: PrestamoRepository;
 
-    constructor(libroRepository : LibroRepository, prestamoRepository : PrestamoRepository){
+    constructor(libroRepository : LibroRepository, prestamoRepository: PrestamoRepository){
         this.libroRepository = libroRepository;
         this.prestamoRepository = prestamoRepository;
     }
 
     async getPaginas() {
         return await this.libroRepository.getPaginas();
-    }    
-    
-    async getLibrosPagina(pagina: string) {
-        const libros = await this.libroRepository.getLibrosPagina(pagina);
-        for (const libro of libros) {
-          libro.disponibles = await this.libroRepository.getDisponibles(libro.id);
-        }
-        return libros;
+    }  
+
+    async getLibrosConEjemplaresDisponibles(pagina: string): Promise<Libro[]>{
+        return this.libroRepository.getLibrosConEjemplaresDisponibles(pagina);
     }
 
     async getPaginasByNombreLibro(busca: string){
         return await this.libroRepository.getPaginasByNombreLibro(busca);
     }
 
-    async getLibrosByNombreFromPagina(busca: string, pagina: string) {
-        const libros = await this.libroRepository.getLibrosByNombreFromPagina(busca, pagina);
-        for (const libro of libros) {
-          libro.disponibles = await this.libroRepository.getDisponibles(libro.id);
-        }
-        return libros;
+    async getLibrosConEjemplaresDisponiblesByTitulo(busca: string, pagina: string): Promise<Libro[]> {
+        return this.libroRepository.getLibrosConEjemplaresDisponiblesByTitulo(busca, pagina);
     }
 
-    async postPrestarLibro(token : string | undefined, libro: string){
-        const ejemplar = await this.libroRepository.getEjemplarRandom(libro);
-        const isDisponible =  await this.libroRepository.putDisponibleFalse(ejemplar);
-        if(isDisponible){
-            return this.prestamoRepository.postPrestarLibro(token,ejemplar);
-        }else{
-            throw new Error("No quedan libros disponibles");
-        }
+    async postLibro(token: string | undefined, libro: string): Promise<Prestamo> {
+        return this.prestamoRepository.postPrestarLibro(token, libro);
     }
 
+    async getLibrosPrestadosUsuario(token: string | undefined): Promise<Prestamo[]> {
+        return this.prestamoRepository.getPrestamosUsuario(token);
+    }
+    async putLibro(token: string | undefined, ejemplar: string) {
+        return this.prestamoRepository.putDevolverLibro(token,ejemplar);
+    }
 }

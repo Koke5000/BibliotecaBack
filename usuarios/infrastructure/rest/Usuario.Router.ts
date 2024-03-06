@@ -1,16 +1,16 @@
 import express from "express";
-import Usuario from "../../domain/Usuario";
-import UsuarioRepositoryPostgres from "../db/Usuario.Postges";
 import UsuarioUseCases from "../../application/Usuario.UseCases";
+import UsuarioRepositoryPostgres from "../db/Usuario.Postgres";
+import Usuario from "../../domain/Usuario";
 import { createToken, isAuth } from "../../../context/security/auth";
 
+
 const router = express.Router();
-const usuarioUseCases:UsuarioUseCases = new UsuarioUseCases(new UsuarioRepositoryPostgres());
+const usuarioUseCases : UsuarioUseCases = new UsuarioUseCases(new UsuarioRepositoryPostgres());
 
 router.post("/registro", async (req, res) => {
     try {
-        const usuario : Usuario = await usuarioUseCases.registro(req.body)
-        res.json(usuario);
+        res.json(await usuarioUseCases.registro(req.body));
     } catch (error) {        
         res.status(500).json({error: "Internal Server Error"})
     }
@@ -29,9 +29,7 @@ router.post("/login", async (req, res) => {
         };
         const token = createToken(usuario);
         res.json({token, usuario}); 
-    } catch (error) {
-        console.log(error);
-        
+    } catch (error) {            
         res.status(500).json({error: "Internal Server Error"})
     }
 });
@@ -39,20 +37,16 @@ router.post("/login", async (req, res) => {
 router.put("/registro", isAuth, async (req, res) => {
     try {
         const token : string | undefined = req.body.token
-        const usuarioEditar : Usuario = {
-            email: req.body.email,
+        const usuario : Usuario = {
             nombre: req.body.nombre,
             apellidos: req.body.apellidos,
-            password : req.body.password
+            email: req.body.email,
+            password: req.body.password
         }
-        const usuario : Usuario = await usuarioUseCases.editarUsuario(token, usuarioEditar)
-        res.json(usuario);
-    } catch (error) {        
-        console.log(error);
-        
+        res.json(await usuarioUseCases.modify(token,usuario));
+    } catch (error) {
         res.status(500).json({error: "Internal Server Error"})
     }
-});
-
+})
 
 export default router;
